@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "614068609363",
+    "firebase_url": "https://uberbestshot.firebaseio.com",
+    "project_id": "uberbestshot",
+    "storage_bucket": "uberbestshot.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:614068609363:android:a6542fbcd6eb437b",
+        "android_client_info": {
+          "package_name": "com.example.mjrlo.uberbestshot"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "614068609363-32m847uogod7hl7e426meah213o10igi.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.mjrlo.uberbestshot",
+            "certificate_hash": "7df930d0f5c20d1e5ddf9233f7bf0f3f0ccf7874"
+          }
+        },
+        {
+          "client_id": "614068609363-h6vk3flu45ofjqq9dd3uga23beck9k64.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCBfhmt2DmuLLSJTFpnS4G2qyzUWzq7ikY"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "614068609363-h6vk3flu45ofjqq9dd3uga23beck9k64.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
