@@ -8,21 +8,24 @@ import android.widget.Button;
 
 public class MainActivity extends AppCompatActivity {
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
 
-        Button driverButton = (Button) findViewById(R.id.DriverButton);
         Button riderButton= (Button)findViewById(R.id.RiderButton);
 
+Button driverButton= (Button)findViewById(R.id.DriverButton);
 
         driverButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this,DriverLoginPage.class);
+                Intent intent = new Intent(MainActivity.this,DriverMapActivity.class);
                 startActivity(intent);
+
 
 
             }

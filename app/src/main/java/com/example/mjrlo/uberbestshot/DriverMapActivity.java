@@ -1,27 +1,34 @@
 package com.example.mjrlo.uberbestshot;
 
 import android.location.Location;
+import android.location.LocationListener;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 
+import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.android.gms.common.api.GoogleApiClient;
+
+
 
 public class DriverMapActivity extends FragmentActivity implements OnMapReadyCallback , GoogleMap.OnMyLocationButtonClickListener,
-        GoogleMap.OnMyLocationClickListener
-         {
+        GoogleMap.OnMyLocationClickListener, GoogleApiClient.OnConnectionFailedListener, OnSuccessListener, LocationListener
+{
 
     private GoogleMap mMap;
     private FirebaseAuth mAuth;
+
 
 
     @Override
@@ -73,4 +80,33 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
 
     }
 
+             @Override
+             public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+             }
+
+             @Override
+             public void onSuccess(Object o) {
+
+             }
+
+    @Override
+    public void onLocationChanged(Location location) {
+
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+
+    }
 }
