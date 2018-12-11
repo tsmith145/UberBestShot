@@ -17,15 +17,18 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class DriverLoginPage extends AppCompatActivity {
    private FirebaseAuth mAuth;
-    Button loginButton=(Button) findViewById(R.id.loginButton);
-    EditText userNameEditText =(EditText) findViewById(R.id.UserNameEditText);
-    EditText PasswordEditText =(EditText) findViewById(R.id.PasswordEditText);
-    String email =(String) userNameEditText.getText().toString();
-    String password =(String) PasswordEditText.getText().toString();
-    Button registerButton=(Button) findViewById(R.id.registerButton);
+    private Button loginButton;
+    private EditText userNameEditText;
+    private EditText PasswordEditText;
+    private String email;
+    private String password;
+    private Button registerButton;
+    private FirebaseAuth.AuthStateListener firebaseAuthStatelistener;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,35 +38,69 @@ public class DriverLoginPage extends AppCompatActivity {
 
 
         mAuth = FirebaseAuth.getInstance();
-    }
-    @Override
-    public void onStart() {
-        super.onStart();
-        // Check if user is signed in (non-null) and update UI accordingly.
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        updateUI(currentUser);
+
+        loginButton=(Button) findViewById(R.id.LoginButton);
+        registerButton =(Button) findViewById(R.id.registerButton);
+        userNameEditText =(EditText) findViewById(R.id.UserNameEditText);
+        PasswordEditText =(EditText) findViewById(R.id.PasswordEditText);
+
+        firebaseAuthStatelistener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                if (user != null) {
+                    Intent intent = new Intent(DriverLoginPage.this, DriverMapActivity.class);
+                    startActivity(intent);
+                    finish();
+                    return;
+                }
+
+            }
+        };
 
 
         registerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
+
+                final String password = PasswordEditText.getText().toString();
+                final String email = userNameEditText.getText().toString();
                 createAccount(email,password);
+
             }
         });
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
+
+
+                final String password = PasswordEditText.getText().toString();
+                final String email = userNameEditText.getText().toString();
                 signInAccount(email,password);
+
             }
         });
 
+    }
+    @Override
+    public void onStart() {
+        super.onStart();
+        // Check if user is signed in (non-null) and update UI accordingly.
+        //updateUI(currentUser);
+        mAuth.addAuthStateListener(firebaseAuthStatelistener);
 
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mAuth.addAuthStateListener(firebaseAuthStatelistener);
 
-    public void createAccount(String email,String password) {
+    }
+
+    public void createAccount(String email, String password) {
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -79,6 +116,9 @@ public class DriverLoginPage extends AppCompatActivity {
                             Toast.makeText(DriverLoginPage.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
                             updateUI(null);
+                            String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                            DatabaseReference current_user_db = FirebaseDatabase.getInstance().getReference().child("Users").child("Drivers").child(userId);
+                            current_user_db.setValue(true);
                         }
 
                         // ...
@@ -101,8 +141,7 @@ public class DriverLoginPage extends AppCompatActivity {
                             //Log.w(TAG, "signInWithEmail:failure", task.getException());
                             Toast.makeText(DriverLoginPage.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
-                            updateUI(null);
-                            Intent intent = new Intent(DriverLoginPage.this,DriverMapActivity.class);
+                           // updateUI(null);
 
                         }
 

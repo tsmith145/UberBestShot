@@ -23,14 +23,25 @@ Button driverButton= (Button)findViewById(R.id.DriverButton);
         driverButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this,DriverMapActivity.class);
+                Intent intent = new Intent(MainActivity.this,DriverLoginPage.class);
                 startActivity(intent);
 
 
 
             }
         });
+       //  riderButton= (Button)findViewById(R.id.RiderButton);
 
+        riderButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this,CustomerMapsActivity.class);
+                startActivity(intent);
+
+
+
+            }
+        });
 
     }
 

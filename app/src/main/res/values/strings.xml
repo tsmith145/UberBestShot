@@ -3,4 +3,5 @@
     <string name="title_activity_email_password">EmailPasswordActivity</string>
     <string name="title_activity_driver_map">Map</string>
     <string name="title_activity_rider_login_page">RiderLoginPage</string>
+    <string name="title_activity_customer_maps">Map</string>
 </resources>
