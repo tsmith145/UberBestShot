@@ -66,7 +66,18 @@ public class DriverLoginPage extends AppCompatActivity {
 
                 final String password = PasswordEditText.getText().toString();
                 final String email = userNameEditText.getText().toString();
-                createAccount(email,password);
+             mAuth.createUserWithEmailAndPassword(email,password).addOnCompleteListener(DriverLoginPage.this, new OnCompleteListener<AuthResult>() {
+                 @Override
+                 public void onComplete(@NonNull Task<AuthResult> task) {
+                     if (!task.isSuccessful()){
+                         Toast.makeText(DriverLoginPage.this,"sing up error", Toast.LENGTH_SHORT).show();
+                     }else {
+                         String user_id = mAuth.getInstance().getCurrentUser().getUid();
+                         DatabaseReference current_user_db = FirebaseDatabase.getInstance().getReference().child("Users").child("Drivers").child(user_id);
+                         current_user_db.setValue(true);
+                     }
+                 }
+             });
 
             }
         });
@@ -78,7 +89,17 @@ public class DriverLoginPage extends AppCompatActivity {
 
                 final String password = PasswordEditText.getText().toString();
                 final String email = userNameEditText.getText().toString();
-                signInAccount(email,password);
+               mAuth.signInWithEmailAndPassword(email,password)
+                       .addOnCompleteListener(DriverLoginPage.this, new OnCompleteListener<AuthResult>() {
+                           @Override
+                           public void onComplete(@NonNull Task<AuthResult> task) {
+
+
+                               if(!task.isSuccessful()){
+                                   Toast.makeText(DriverLoginPage.this,"sign in error",Toast.LENGTH_SHORT).show();
+                               }
+                           }
+                       });
 
             }
         });
@@ -100,56 +121,9 @@ public class DriverLoginPage extends AppCompatActivity {
 
     }
 
-    public void createAccount(String email, String password) {
-        mAuth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            //Log.d(TAG, "createUserWithEmail:success");
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            updateUI(user);
-                        } else {
-                            // If sign in fails, display a message to the user.
-                            //Log.w(TAG, "createUserWithEmail:failure", task.getException());
-                            Toast.makeText(DriverLoginPage.this, "Authentication failed.",
-                                    Toast.LENGTH_SHORT).show();
-                            updateUI(null);
-                            String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-                            DatabaseReference current_user_db = FirebaseDatabase.getInstance().getReference().child("Users").child("Drivers").child(userId);
-                            current_user_db.setValue(true);
-                        }
 
-                        // ...
-                    }
-                });
-    }
 
-    public void signInAccount(String email,String password) {
-        mAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            //Log.d(TAG, "signInWithEmail:success");
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            updateUI(user);
-                        } else {
-                            // If sign in fails, display a message to the user.
-                            //Log.w(TAG, "signInWithEmail:failure", task.getException());
-                            Toast.makeText(DriverLoginPage.this, "Authentication failed.",
-                                    Toast.LENGTH_SHORT).show();
-                           // updateUI(null);
 
-                        }
-
-                        // ...
-                    }
-                });
-
-    }
 
     private void updateUI(FirebaseUser user) {
 
