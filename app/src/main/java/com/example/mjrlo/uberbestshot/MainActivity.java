@@ -35,7 +35,7 @@ Button driverButton= (Button)findViewById(R.id.DriverButton);
         riderButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this,CustomerMapsActivity.class);
+                Intent intent = new Intent(MainActivity.this,RiderLoginPage.class);
                 startActivity(intent);
 
 
