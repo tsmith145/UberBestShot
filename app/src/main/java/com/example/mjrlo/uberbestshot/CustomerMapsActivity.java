@@ -1,6 +1,7 @@
 package com.example.mjrlo.uberbestshot;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
@@ -9,8 +10,12 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
+import com.firebase.geofire.GeoFire;
+import com.firebase.geofire.GeoLocation;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -22,9 +27,13 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class CustomerMapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMyLocationButtonClickListener,
         GoogleMap.OnMyLocationClickListener, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks, OnSuccessListener, LocationListener, com.google.android.gms.location.LocationListener {
@@ -39,7 +48,11 @@ public class CustomerMapsActivity extends FragmentActivity implements OnMapReady
     Location mLastLocation;
     GoogleApiClient googleApiClient;
     LocationRequest mlocationRequest;
+    LatLng position;
     private SupportMapFragment mapFragment;
+    private Button CallUberButton;
+    private String RemoveUserId;
+    private Button LogOutButton;
    // final int LOCATION_REQUEST_CODE = 1;
 
 
@@ -48,10 +61,59 @@ public class CustomerMapsActivity extends FragmentActivity implements OnMapReady
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_customer_maps2);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+        final SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        CallUberButton = (Button) findViewById(R.id.call_uber_button);
+        LogOutButton = (Button) findViewById(R.id.Log_Out_Button);
+
+
+        RemoveUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+
+        CallUberButton.setOnClickListener(onClick);
+
+
+        LogOutButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    FirebaseAuth.getInstance().signOut();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                Intent intent = new Intent(CustomerMapsActivity.this,MainActivity.class);
+                startActivity(intent);
+                finish();
+                return;
+            }
+        });
     }
+
+
+
+    public View.OnClickListener onClick= new View.OnClickListener() {
+
+        @Override
+        public void onClick(View v) {
+
+            String userid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("RidersAvailable");
+
+
+            GeoFire geoFire= new GeoFire(databaseReference);
+            geoFire.setLocation(userid, new GeoLocation(mLastLocation.getLatitude(), mLastLocation.getLongitude()), new GeoFire.CompletionListener() {
+                @Override
+                public void onComplete(String key, DatabaseError error) {
+
+                }
+            });
+            position = new LatLng(mLastLocation.getLatitude(),mLastLocation.getLongitude());
+            mMap.addMarker(new MarkerOptions().position(position).title("Pick up Here"));
+            // Do something in response to button click
+        }
+    };
 
 
     /**
@@ -63,6 +125,7 @@ public class CustomerMapsActivity extends FragmentActivity implements OnMapReady
      * it inside the SupportMapFragment. This method will only be triggered once the user has
      * installed Google Play services and returned to the app.
      */
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -72,6 +135,7 @@ public class CustomerMapsActivity extends FragmentActivity implements OnMapReady
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
 */
+
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
@@ -142,6 +206,7 @@ public class CustomerMapsActivity extends FragmentActivity implements OnMapReady
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
         mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
 
+
     }
 
     @Override
@@ -185,5 +250,19 @@ public class CustomerMapsActivity extends FragmentActivity implements OnMapReady
     @Override
     public void onConnectionSuspended(int i) {
 
+    }
+    protected void onStop() {
+        super.onStop();
+        LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
+        //String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("RidersAvailable");
+
+        GeoFire geoFire = new GeoFire(ref);
+        geoFire.removeLocation(RemoveUserId, new GeoFire.CompletionListener() {
+            @Override
+            public void onComplete(String key, DatabaseError error) {
+
+            }
+        });
     }
 }

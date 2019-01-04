@@ -1,6 +1,7 @@
 package com.example.mjrlo.uberbestshot;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
@@ -10,6 +11,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.firebase.geofire.GeoFire;
@@ -52,13 +55,16 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
     Location mLastLocation;
     GoogleApiClient googleApiClient;
     LocationRequest mlocationRequest;
-
+    private Button LogOutButton;
+    private String RemoveUserId;
     private SupportMapFragment mapFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_driver_map);
+
+        LogOutButton = (Button) findViewById(R.id.Log_Out_Button);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -67,7 +73,7 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
 
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-
+        RemoveUserId=FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
@@ -91,6 +97,22 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
                 });
 
 
+        LogOutButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                try {
+                    FirebaseAuth.getInstance().signOut();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                Intent intent = new Intent(DriverMapActivity.this,MainActivity.class);
+                startActivity(intent);
+                finish();
+                return;
+            }
+        });
+
     }
 
 
@@ -103,6 +125,7 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
      * it inside the SupportMapFragment. This method will only be triggered once the user has
      * installed Google Play services and returned to the app.
      */
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -184,7 +207,7 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
         mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
 
         //Post post = new Post(userId, username, title, body);
-        String userid = mAuth.getCurrentUser().getUid().toString();
+       String userid = mAuth.getCurrentUser().getUid().toString();
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("DriversAvailable");
 
         GeoFire geoFire= new GeoFire(databaseReference);
@@ -244,11 +267,11 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
     protected void onStop() {
         super.onStop();
         LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
-        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        //String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("driversAvailable");
 
         GeoFire geoFire = new GeoFire(ref);
-        geoFire.removeLocation(userId, new GeoFire.CompletionListener() {
+        geoFire.removeLocation(RemoveUserId, new GeoFire.CompletionListener() {
             @Override
             public void onComplete(String key, DatabaseError error) {
 

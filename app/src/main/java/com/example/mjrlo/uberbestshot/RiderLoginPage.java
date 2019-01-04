@@ -69,7 +69,7 @@ public class RiderLoginPage extends AppCompatActivity {
                 mAuth.createUserWithEmailAndPassword(email,password).addOnCompleteListener(RiderLoginPage.this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (!task.isSuccessful()){
+                        if (!task.isSuccessful() ){
                             Toast.makeText(RiderLoginPage.this,"sing up error", Toast.LENGTH_SHORT).show();
                         }else {
                             String user_id = mAuth.getInstance().getCurrentUser().getUid();
