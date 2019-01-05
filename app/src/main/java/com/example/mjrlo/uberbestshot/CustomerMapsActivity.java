@@ -16,6 +16,8 @@ import android.widget.Toast;
 
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
+import com.firebase.geofire.GeoQuery;
+import com.firebase.geofire.GeoQueryEventListener;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -31,9 +33,14 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.HashMap;
+import java.util.List;
 
 public class CustomerMapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMyLocationButtonClickListener,
         GoogleMap.OnMyLocationClickListener, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks, OnSuccessListener, LocationListener, com.google.android.gms.location.LocationListener {
@@ -53,6 +60,7 @@ public class CustomerMapsActivity extends FragmentActivity implements OnMapReady
     private Button CallUberButton;
     private String RemoveUserId;
     private Button LogOutButton;
+
    // final int LOCATION_REQUEST_CODE = 1;
 
 
@@ -112,20 +120,98 @@ public class CustomerMapsActivity extends FragmentActivity implements OnMapReady
             position = new LatLng(mLastLocation.getLatitude(),mLastLocation.getLongitude());
             mMap.addMarker(new MarkerOptions().position(position).title("Pick up Here"));
             // Do something in response to button click
+
+
+            findClosestDriver();
         }
+
     };
 
 
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
 
+
+
+
+
+    private int radius=1;
+    private Boolean driverFound= false;
+    private String driverFoundID;
+    public void findClosestDriver(){
+
+          DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("DriversAvailable");
+          GeoFire geoFire = new GeoFire(databaseReference);
+          GeoQuery geoQuery = geoFire.queryAtLocation(new GeoLocation(position.latitude,position.longitude),radius);
+          geoQuery.removeAllListeners();
+
+          geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
+              @Override
+              public void onKeyEntered(String key, GeoLocation location) {
+
+                  if (!driverFound){
+                      driverFound = true;
+                      driverFoundID= key;
+
+                      DatabaseReference driverReference = FirebaseDatabase.getInstance().getReference("Users").child("Drivers").child(driverFoundID);
+                      String customerID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                      HashMap map = new HashMap();
+                      map.put("customerRideId",customerID);
+                      driverReference.updateChildren(map);
+
+                      getDriverLocation();
+                      CallUberButton.setText("Looking For Drivers Location");
+                     }
+
+              }
+
+              @Override
+              public void onKeyExited(String key) {
+
+              }
+
+              @Override
+              public void onKeyMoved(String key, GeoLocation location) {
+
+              }
+
+              @Override
+              public void onGeoQueryReady() {
+
+                  if(!driverFound){
+                      radius++;
+                      findClosestDriver();
+                  }
+
+
+              }
+
+              @Override
+              public void onGeoQueryError(DatabaseError error) {
+
+              }
+          });
+
+      }
+
+      public void getDriverLocation(){
+        DatabaseReference driverLocationReference = FirebaseDatabase.getInstance().getReference("driversWorking").child(driverFoundID).child("l");
+        driverLocationReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()){
+                    List<Object> map = (List<Object>) dataSnapshot.getValue();
+                    double locationLat = 0;
+                    double locationLong =0;
+                    CallUberButton.setText("Driver Found");
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+      }
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
