@@ -136,7 +136,7 @@ public class CustomerMapsActivity extends FragmentActivity implements OnMapReady
     private int radius=1;
     private Boolean driverFound= false;
     private String driverFoundID;
-    public void findClosestDriver(){
+    private void findClosestDriver(){
 
           DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("DriversAvailable");
           GeoFire geoFire = new GeoFire(databaseReference);
@@ -157,8 +157,9 @@ public class CustomerMapsActivity extends FragmentActivity implements OnMapReady
                       map.put("customerRideId",customerID);
                       driverReference.updateChildren(map);
 
-                      getDriverLocation();
+
                       CallUberButton.setText("Looking For Drivers Location");
+                      getDriverLocation();
                      }
 
               }
@@ -192,8 +193,12 @@ public class CustomerMapsActivity extends FragmentActivity implements OnMapReady
 
       }
 
-      public void getDriverLocation(){
-        DatabaseReference driverLocationReference = FirebaseDatabase.getInstance().getReference("driversWorking").child(driverFoundID).child("l");
+      private void getDriverLocation(){
+
+        DatabaseReference driverLocationReference = FirebaseDatabase.getInstance().getReference("driverWorking").child(driverFoundID).child("l");
+
+
+        driverLocationReference.setValue(true);
         driverLocationReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -201,6 +206,7 @@ public class CustomerMapsActivity extends FragmentActivity implements OnMapReady
                     List<Object> map = (List<Object>) dataSnapshot.getValue();
                     double locationLat = 0;
                     double locationLong =0;
+
                     CallUberButton.setText("Driver Found");
                 }
 
