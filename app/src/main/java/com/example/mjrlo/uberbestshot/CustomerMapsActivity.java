@@ -136,9 +136,11 @@ public class CustomerMapsActivity extends FragmentActivity implements OnMapReady
     private int radius=1;
     private Boolean driverFound= false;
     private String driverFoundID;
+    private DatabaseReference databaseReference;
+    private DatabaseReference driverReference;
     private void findClosestDriver(){
 
-          DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("DriversAvailable");
+           databaseReference = FirebaseDatabase.getInstance().getReference("DriversAvailable");
           GeoFire geoFire = new GeoFire(databaseReference);
           GeoQuery geoQuery = geoFire.queryAtLocation(new GeoLocation(position.latitude,position.longitude),radius);
           geoQuery.removeAllListeners();
@@ -151,7 +153,7 @@ public class CustomerMapsActivity extends FragmentActivity implements OnMapReady
                       driverFound = true;
                       driverFoundID= key;
 
-                      DatabaseReference driverReference = FirebaseDatabase.getInstance().getReference("Users").child("Drivers").child(driverFoundID);
+                       driverReference = FirebaseDatabase.getInstance().getReference("Users").child("Drivers").child(driverFoundID);
                       String customerID = FirebaseAuth.getInstance().getCurrentUser().getUid();
                       HashMap map = new HashMap();
                       map.put("customerRideId",customerID);
@@ -193,20 +195,37 @@ public class CustomerMapsActivity extends FragmentActivity implements OnMapReady
 
       }
 
+      private Marker DriverMarker;
+      private DatabaseReference driverLocationReference;
+      private GeoFire driverLocationFire;
+      private Location driverAvailableLocationLatitude;
+      private Location driverAvailableLocationLongitude;
+      private ValueEventListener driverLocationListener;
       private void getDriverLocation(){
 
-        DatabaseReference driverLocationReference = FirebaseDatabase.getInstance().getReference("driverWorking").child(driverFoundID).child("l");
+         driverLocationReference = FirebaseDatabase.getInstance().getReference("driverWorking").child(driverFoundID).child("l");
+       // driverLocationReference.setValue(true)
 
-
-        driverLocationReference.setValue(true);
-        driverLocationReference.addValueEventListener(new ValueEventListener() {
+          driverLocationListener=driverLocationReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()){
                     List<Object> map = (List<Object>) dataSnapshot.getValue();
                     double locationLat = 0;
                     double locationLong =0;
+                    if (map.get(0)!=null) {
+                        locationLat= Double.parseDouble(map.get(0).toString());
 
+                    }
+                    if (map.get(1)!=null){
+                        locationLong = Double.parseDouble(map.get(1).toString());
+                    }
+
+                    LatLng driverLatLong = new LatLng(locationLat,locationLong);
+                    if(DriverMarker!=null){
+                        DriverMarker.remove();
+                    }
+                    mMap.addMarker(new MarkerOptions().position(driverLatLong).title("Your Driver Is Here!"));
                     CallUberButton.setText("Driver Found");
                 }
 
