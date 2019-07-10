@@ -53,13 +53,15 @@ public class CustomerMapsActivity extends FragmentActivity implements OnMapReady
 
     private FusedLocationProviderClient mFusedLocationClient;
     Location mLastLocation;
-    GoogleApiClient googleApiClient;
+    private GoogleApiClient googleApiClient;
     LocationRequest mlocationRequest;
     LatLng position;
     private SupportMapFragment mapFragment;
     private Button CallUberButton;
     private String RemoveUserId;
     private Button LogOutButton;
+    Double theDirverLat;
+    Double theDiriverLong;
 
    // final int LOCATION_REQUEST_CODE = 1;
 
@@ -156,13 +158,15 @@ public class CustomerMapsActivity extends FragmentActivity implements OnMapReady
                        driverReference = FirebaseDatabase.getInstance().getReference("Users").child("Drivers").child(driverFoundID);
                       String customerID = FirebaseAuth.getInstance().getCurrentUser().getUid();
                       HashMap map = new HashMap();
+
                       map.put("customerRideId",customerID);
                       driverReference.updateChildren(map);
 
-
                       CallUberButton.setText("Looking For Drivers Location");
+
                       getDriverLocation();
                      }
+
 
               }
 
@@ -194,19 +198,71 @@ public class CustomerMapsActivity extends FragmentActivity implements OnMapReady
           });
 
       }
+      private void takeDriverOutOfDiversAvailableIntoDriversWorking(DatabaseReference fromPath, final DatabaseReference toPath){
+
+
+
+
+
+      }
 
       private Marker DriverMarker;
-      private DatabaseReference driverLocationReference;
+      private DatabaseReference driverLocationReferenceGetLocation;
       private GeoFire driverLocationFire;
       private Location driverAvailableLocationLatitude;
       private Location driverAvailableLocationLongitude;
       private ValueEventListener driverLocationListener;
+      private DatabaseReference dWork;
+
+
+
+
       private void getDriverLocation(){
 
-         driverLocationReference = FirebaseDatabase.getInstance().getReference("driverWorking").child(driverFoundID).child("l");
-       // driverLocationReference.setValue(true)
 
-          driverLocationListener=driverLocationReference.addValueEventListener(new ValueEventListener() {
+          dWork= FirebaseDatabase.getInstance().getReference("DriversWorking");
+
+         driverLocationReferenceGetLocation = FirebaseDatabase.getInstance().getReference("DriversAvailable").child(driverFoundID).child("l");
+         driverLocationReferenceGetLocation.addValueEventListener(new ValueEventListener() {
+             @Override
+             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                 for (DataSnapshot snapm: dataSnapshot.getChildren()) {
+
+                     //for some reason these are null evene thogh snpm is getting populated propery
+                     Double latitude = (Double) dataSnapshot.child("0").getValue();
+                     Double longitude = (Double) dataSnapshot.child("1").getValue();
+
+
+
+                    //DatabaseReference dWork= FirebaseDatabase.getInstance().getReference("DriversWorking");
+
+                     GeoFire geoFireDriverlcation = new GeoFire(driverLocationReferenceGetLocation);
+
+                     //where the bug is
+                     geoFireDriverlcation.setLocation(driverFoundID, new GeoLocation(latitude, longitude), new GeoFire.CompletionListener() {
+                         @Override
+                         public void onComplete(String key, DatabaseError error) {
+
+                         }
+                     });
+
+                 }
+
+
+             }
+
+             @Override
+             public void onCancelled(@NonNull DatabaseError databaseError) {
+
+             }
+         });
+
+
+
+
+
+
+          driverLocationListener=driverLocationReferenceGetLocation.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()){
@@ -362,8 +418,9 @@ public class CustomerMapsActivity extends FragmentActivity implements OnMapReady
     public void onConnectionSuspended(int i) {
 
     }
+    @Override
     protected void onStop() {
-        super.onStop();
+super.onStop();
         LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
         //String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("RidersAvailable");
