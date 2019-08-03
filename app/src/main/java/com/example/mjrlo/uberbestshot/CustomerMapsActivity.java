@@ -109,10 +109,9 @@ public class CustomerMapsActivity extends FragmentActivity implements OnMapReady
 
             String userid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("RidersAvailable");
 
-
-            GeoFire geoFire= new GeoFire(databaseReference);
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference("customerRequest");
+            GeoFire geoFire= new GeoFire(ref);
             geoFire.setLocation(userid, new GeoLocation(mLastLocation.getLatitude(), mLastLocation.getLongitude()), new GeoFire.CompletionListener() {
                 @Override
                 public void onComplete(String key, DatabaseError error) {
@@ -140,6 +139,7 @@ public class CustomerMapsActivity extends FragmentActivity implements OnMapReady
     private String driverFoundID;
     private DatabaseReference databaseReference;
     private DatabaseReference driverReference;
+
     private void findClosestDriver(){
 
            databaseReference = FirebaseDatabase.getInstance().getReference("DriversAvailable");
@@ -166,6 +166,8 @@ public class CustomerMapsActivity extends FragmentActivity implements OnMapReady
 
                       getDriverLocation();
                      }
+
+                  radius++;
 
 
               }
@@ -220,49 +222,9 @@ public class CustomerMapsActivity extends FragmentActivity implements OnMapReady
       private void getDriverLocation(){
 
 
-          dWork= FirebaseDatabase.getInstance().getReference("DriversWorking");
 
-         driverLocationReferenceGetLocation = FirebaseDatabase.getInstance().getReference("DriversAvailable").child(driverFoundID).child("l");
+         driverLocationReferenceGetLocation = FirebaseDatabase.getInstance().getReference("DriversWorking").child(driverFoundID).child("l");
          driverLocationReferenceGetLocation.addValueEventListener(new ValueEventListener() {
-             @Override
-             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                 for (DataSnapshot snapm: dataSnapshot.getChildren()) {
-
-                     //for some reason these are null evene thogh snpm is getting populated propery
-                     Double latitude = (Double) dataSnapshot.child("0").getValue();
-                     Double longitude = (Double) dataSnapshot.child("1").getValue();
-
-
-
-                    //DatabaseReference dWork= FirebaseDatabase.getInstance().getReference("DriversWorking");
-
-                     GeoFire geoFireDriverlcation = new GeoFire(driverLocationReferenceGetLocation);
-
-                     //where the bug is
-                     geoFireDriverlcation.setLocation(driverFoundID, new GeoLocation(latitude, longitude), new GeoFire.CompletionListener() {
-                         @Override
-                         public void onComplete(String key, DatabaseError error) {
-
-                         }
-                     });
-
-                 }
-
-
-             }
-
-             @Override
-             public void onCancelled(@NonNull DatabaseError databaseError) {
-
-             }
-         });
-
-
-
-
-
-
-          driverLocationListener=driverLocationReferenceGetLocation.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()){
@@ -374,6 +336,8 @@ public class CustomerMapsActivity extends FragmentActivity implements OnMapReady
         mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
 
 
+
+
     }
 
     @Override
@@ -423,7 +387,7 @@ public class CustomerMapsActivity extends FragmentActivity implements OnMapReady
 super.onStop();
         LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
         //String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("RidersAvailable");
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("customerRequest");
 
         GeoFire geoFire = new GeoFire(ref);
         geoFire.removeLocation(RemoveUserId, new GeoFire.CompletionListener() {
