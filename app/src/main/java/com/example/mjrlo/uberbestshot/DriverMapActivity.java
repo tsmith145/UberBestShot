@@ -5,12 +5,13 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.FragmentActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -30,7 +31,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -38,9 +38,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.firebase.database.ValueEventListener;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 public class DriverMapActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMyLocationButtonClickListener,
@@ -61,7 +59,9 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
     private Button LogOutButton;
     private String RemoveUserId;
     private SupportMapFragment mapFragment;
-    private String customerID = "";
+    private static String customerID = "";
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -117,15 +117,31 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
             }
         });
 
-        getAssignedCustomer();
+        getAssignedCustomer(new MyCallback(){
+            @Override
+            public void onCallback(String value){
+                Log.d("TAG",value);
+
+            }
+
+        });
 
 
 
     }
+    public interface MyCallback {
+        void onCallback(String value);
+    }
 
-    public void getAssignedCustomer() {
+
+
+
+    public void getAssignedCustomer(final MyCallback myCallback) {
         String driverId = FirebaseAuth.getInstance().getCurrentUser().getUid();
         DatabaseReference assignedCustomerRef =FirebaseDatabase.getInstance().getReference().child("Users").child("Drivers").child(driverId).child("customerRideId");
+
+
+
         assignedCustomerRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -138,6 +154,7 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
 
                 }
 
+                myCallback.onCallback(customerID);
             }
 
             @Override
@@ -148,6 +165,11 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
 
 
     }
+
+
+
+
+
 
     public void getAssignedCustomerLocation(){
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -175,6 +197,9 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
 
             }
 
+
+
+
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
 
@@ -190,6 +215,8 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
      * it inside the SupportMapFragment. This method will only be triggered once the user has
      * installed Google Play services and returned to the app.
      */
+
+
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
