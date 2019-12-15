@@ -135,7 +135,11 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
 
 
 
-
+//This method grabs identifies which customer the driver will be servicing.
+// The way this method will achieve identifying the customer is by grabbing the customer id
+// The customer id was placed on to the driver by the customer when they clicked the CAll Uber button in the CustomerMapsActivity class
+// When the CAll Uber button was clicked the customer id was placed into a hash map with the key customerRideId and attached to the driver closest to the customer
+// This method will retrieve that customers id and create a variable for it
     public void getAssignedCustomer(final MyCallback myCallback) {
         String driverId = FirebaseAuth.getInstance().getCurrentUser().getUid();
         DatabaseReference assignedCustomerRef =FirebaseDatabase.getInstance().getReference().child("Users").child("Drivers").child(driverId).child("customerRideId");
@@ -173,7 +177,7 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
 
     public void getAssignedCustomerLocation(){
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        DatabaseReference assignedCustomerRef = FirebaseDatabase.getInstance().getReference().child("customerRequest").child(userId).child("l");
+        DatabaseReference assignedCustomerRef = FirebaseDatabase.getInstance().getReference().child("customerRequest").child(customerID).child("l");
         assignedCustomerRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -189,7 +193,7 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
                         locationLong = Double.parseDouble(map.get(1).toString());
                     }
                     LatLng driverLatLong = new LatLng(locationLat,locationLong);
-                    mMap.addMarker(new MarkerOptions().position(driverLatLong).title("your driver"));
+                    mMap.addMarker(new MarkerOptions().position(driverLatLong).title("your customer is at this location"));
 
 
 
@@ -290,6 +294,10 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
 
     }
 
+
+
+    //This method uses the customer id that we grabbed earlier to determine whether the driver is working or not. If the customerID is not null the driver is working he/she will be placed in the driversworking table
+    //The customerMapsActivity will then retrieve the drivers location from there and use it to notify the customer
     @Override
     public void onLocationChanged(Location location) {
 
