@@ -22,6 +22,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.directions.route.Route;
+import com.directions.route.RouteException;
+import com.directions.route.RoutingListener;
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
 import com.firebase.geofire.GeoQuery;
@@ -46,10 +49,11 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class CustomerMapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class CustomerMapsActivity extends FragmentActivity implements OnMapReadyCallback, RoutingListener {
 
     private static final String TAG = "";
     private GoogleMap mMap;
@@ -109,7 +113,9 @@ public class CustomerMapsActivity extends FragmentActivity implements OnMapReady
         });
     }
 
-
+//This method is envoked when the user clicks on the Call uber button
+ // The purpose of this method is to put the riders ID and Location in the CustomerRequest table and create a marker on the map of where the rider is
+ //
     public View.OnClickListener onClick = new View.OnClickListener() {
 
         @Override
@@ -143,6 +149,15 @@ public class CustomerMapsActivity extends FragmentActivity implements OnMapReady
     private DatabaseReference databaseReference;
     private DatabaseReference driverReference;
 
+
+
+    //The point of this method is to find the driver that is closest to you and associate you with that driver. A map marker pointing to that drivers
+    //will be done later in get driverlocation
+
+    //How to achive: we will use geoquery to find the driver that is closest to you in the DriversAvailable table then store that key in a
+    //variable called driverfoundID, the closest drivers
+    //Then we will attach our(the customer's) id to that driver in the Drivers table, the customers id will be stored in a variable call
+    //CustomerID
     private void findClosestDriver() {
 
         databaseReference = FirebaseDatabase.getInstance().getReference("DriversAvailable");
@@ -239,6 +254,24 @@ public class CustomerMapsActivity extends FragmentActivity implements OnMapReady
                     }
                     mMap.addMarker(new MarkerOptions().position(driverLatLong).title("Your Driver Is Here!"));
                     CallUberButton.setText("Driver Found");
+
+                    Location loc1 = new Location("");
+                    loc1.setLatitude(position.latitude);
+                    loc1.setLongitude(position.longitude);
+
+                    Location loc2= new Location("");
+                    loc2.setLatitude(driverLatLong.latitude);
+                    loc2.setLongitude(driverLatLong.longitude);
+
+                    float distance = loc1.distanceTo(loc2);
+
+                    if(distance<100){
+                        CallUberButton.setText("Driver Is Here");
+                    }else {
+                        CallUberButton.setText("Driver Found"+ String.valueOf(distance));
+                    }
+
+
                 }
 
             }
@@ -371,4 +404,23 @@ public class CustomerMapsActivity extends FragmentActivity implements OnMapReady
         }
     }
 
+    @Override
+    public void onRoutingFailure(RouteException e) {
+
+    }
+
+    @Override
+    public void onRoutingStart() {
+
+    }
+
+    @Override
+    public void onRoutingSuccess(ArrayList<Route> arrayList, int i) {
+
+    }
+
+    @Override
+    public void onRoutingCancelled() {
+
+    }
 }
